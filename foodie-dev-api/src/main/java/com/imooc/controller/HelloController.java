@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(HelloController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedisController.class);
 
   @Autowired
   CarouselService carouselService;

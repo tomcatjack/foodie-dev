@@ -3,12 +3,12 @@ package com.imooc;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
-/** 
+/**
  * 打包war [4] 增加war的启动类
  *
  * @author luqi
  * @date 2020/4/7
- */ 
+ */
 public class WarStarterApplication extends SpringBootServletInitializer {
 
     @Override
