@@ -1,6 +1,9 @@
 package com.imooc.controller;
 
 import com.imooc.service.CarouselService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import org.omg.CORBA.OBJ_ADAPTER;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,15 @@ public class HelloController {
   @GetMapping("/get")
   private Object getCarousel(String id){
     return carouselService.getByKey(id);
+  }
+
+  @GetMapping("/setSession")
+  public Object setSession(HttpServletRequest request){
+    HttpSession session = request.getSession();
+    session.setAttribute("userInfo","new user");
+    session.setMaxInactiveInterval(3600);
+    session.getAttribute("userInfo");
+    return "ok";
   }
 
 }

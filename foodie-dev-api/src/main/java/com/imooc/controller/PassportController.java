@@ -3,13 +3,16 @@ package com.imooc.controller;
 import com.imooc.pojo.Users;
 import com.imooc.pojo.bo.ShopcartBO;
 import com.imooc.pojo.bo.UserBO;
+import com.imooc.pojo.vo.UsersVO;
 import com.imooc.service.UserService;
 import com.imooc.utils.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,17 +95,23 @@ public class PassportController  extends BaseController {
 
     // 4. 实现注册
     Users userResult = userService.createUser(userBO);
-
-    userResult = setNullProperty(userResult);
-
+    UsersVO usersVO = createUsersVO(userResult);
     CookieUtils.setCookie(request, response, "user",
-            JsonUtils.objectToJson(userResult), true);
+            JsonUtils.objectToJson(usersVO), true);
 
-    // TODO 生成用户token，存入redis会话
     // 同步购物车数据
     synchShopcartData(userResult.getId(), request, response);
 
     return IMOOCJSONResult.ok();
+  }
+
+  private UsersVO  createUsersVO(Users users){
+    String tocken = UUID.randomUUID().toString().trim();
+    redisOperator.set(REDIS_USER_TOKEN+":"+users.getId(),tocken);
+    UsersVO usersVO = new UsersVO();
+    usersVO.setUserUniqueToken(tocken);
+    BeanUtils.copyProperties(users,usersVO);
+    return usersVO;
   }
 
   @ApiOperation(value = "用户登录", notes = "用户登录", httpMethod = "POST")
@@ -128,13 +137,10 @@ public class PassportController  extends BaseController {
       return IMOOCJSONResult.errorMsg("用户名或密码不正确");
     }
 
-    userResult = setNullProperty(userResult);
-
+    UsersVO usersVO = createUsersVO(userResult);
     CookieUtils.setCookie(request, response, "user",
-            JsonUtils.objectToJson(userResult), true);
+            JsonUtils.objectToJson(usersVO), true);
 
-
-    // TODO 生成用户token，存入redis会话
     // 同步购物车数据
     synchShopcartData(userResult.getId(), request, response);
 
@@ -219,15 +225,6 @@ public class PassportController  extends BaseController {
     }
   }
 
-  private Users setNullProperty(Users userResult) {
-    userResult.setPassword(null);
-    userResult.setMobile(null);
-    userResult.setEmail(null);
-    userResult.setCreatedTime(null);
-    userResult.setUpdatedTime(null);
-    userResult.setBirthday(null);
-    return userResult;
-  }
 
 
   @ApiOperation(value = "用户退出登录", notes = "用户退出登录", httpMethod = "POST")
@@ -239,8 +236,9 @@ public class PassportController  extends BaseController {
     // 清除用户的相关信息的cookie
     CookieUtils.deleteCookie(request, response, "user");
 
-    // TODO 用户退出登录，需要清空购物车
+    // 用户退出登录，需要清空购物车
     // 分布式会话中需要清除用户数据
+    redisOperator.del(REDIS_USER_TOKEN+":"+userId);
     CookieUtils.deleteCookie(request, response, FOODIE_SHOPCART);
 
     return IMOOCJSONResult.ok();

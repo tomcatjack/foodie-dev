@@ -3,12 +3,14 @@ package com.imooc.controller.center;
 import com.imooc.controller.BaseController;
 import com.imooc.pojo.Users;
 import com.imooc.pojo.bo.center.CenterUserBO;
+import com.imooc.pojo.vo.UsersVO;
 import com.imooc.resource.FileUpload;
 import com.imooc.service.center.CenterUserService;
 import com.imooc.utils.CookieUtils;
 import com.imooc.utils.DateUtil;
 import com.imooc.utils.IMOOCJSONResult;
 import com.imooc.utils.JsonUtils;
+import com.imooc.utils.RedisOperator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -19,11 +21,13 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -49,6 +53,9 @@ public class CenterUserController extends BaseController {
 
   @Autowired
   private FileUpload fileUpload;
+
+  @Autowired
+  private RedisOperator redisOperator;
 
   @ApiOperation(value = "用户头像修改", notes = "用户头像修改", httpMethod = "POST")
   @PostMapping("uploadFace")
@@ -164,13 +171,20 @@ public class CenterUserController extends BaseController {
 
     Users userResult = centerUserService.updateUserInfo(userId, centerUserBO);
 
-    userResult = setNullProperty(userResult);
+    UsersVO usersVO = createUsersVO(userResult);
     CookieUtils.setCookie(request, response, "user",
-        JsonUtils.objectToJson(userResult), true);
-
-    // TODO 后续要改，增加令牌token，会整合进redis，分布式会话
+        JsonUtils.objectToJson(usersVO), true);
 
     return IMOOCJSONResult.ok();
+  }
+
+  private UsersVO createUsersVO(Users users){
+    String tocken = UUID.randomUUID().toString().trim();
+    redisOperator.set(REDIS_USER_TOKEN+":"+users.getId(),tocken);
+    UsersVO usersVO = new UsersVO();
+    usersVO.setUserUniqueToken(tocken);
+    BeanUtils.copyProperties(users,usersVO);
+    return usersVO;
   }
 
   private Map<String, String> getErrors(BindingResult result) {
