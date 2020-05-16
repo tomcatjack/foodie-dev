@@ -5,17 +5,22 @@ import com.imooc.mapper.UsersMapper;
 import com.imooc.pojo.Users;
 import com.imooc.pojo.bo.UserBO;
 import com.imooc.service.UserService;
+import com.imooc.utils.CacheableNotNull;
 import com.imooc.utils.DateUtil;
 import com.imooc.utils.MD5Utils;
+import java.time.LocalDateTime;
 import java.util.Date;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 @Service
+@CacheConfig(cacheNames = "OMS:US")
 public class UserServiceImpl implements UserService {
 
   @Autowired
@@ -59,12 +64,12 @@ public class UserServiceImpl implements UserService {
     // 默认头像
     user.setFace(USER_FACE);
     // 默认生日
-    user.setBirthday(DateUtil.stringToDate("1900-01-01"));
+    user.setBirthday(LocalDateTime.now());
     // 默认性别为 保密
     user.setSex(Sex.secret.type);
 
-    user.setCreatedTime(new Date());
-    user.setUpdatedTime(new Date());
+    user.setCreatedTime(LocalDateTime.now());
+    user.setUpdatedTime(LocalDateTime.now());
 
     usersMapper.insert(user);
 
@@ -84,5 +89,11 @@ public class UserServiceImpl implements UserService {
     Users result = usersMapper.selectOneByExample(userExample);
 
     return result;
+  }
+
+  @Override
+  @Cacheable(key = "#username")
+  public Users getByName(String username) {
+    return usersMapper.selectOne(new Users(){{setUsername(username);}});
   }
 }
