@@ -4,6 +4,7 @@ import com.imooc.mapper.UsersMapper;
 import com.imooc.pojo.Users;
 import com.imooc.pojo.bo.center.CenterUserBO;
 import com.imooc.service.center.CenterUserService;
+import java.time.LocalDateTime;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class CenterUserServiceImpl implements CenterUserService {
         Users updateUser = new Users();
         BeanUtils.copyProperties(centerUserBO, updateUser);
         updateUser.setId(userId);
-        updateUser.setUpdatedTime(new Date());
+        updateUser.setUpdatedTime(LocalDateTime.now());
 
         usersMapper.updateByPrimaryKeySelective(updateUser);
 
@@ -47,7 +48,7 @@ public class CenterUserServiceImpl implements CenterUserService {
         Users updateUser = new Users();
         updateUser.setId(userId);
         updateUser.setFace(faceUrl);
-        updateUser.setUpdatedTime(new Date());
+        updateUser.setUpdatedTime(LocalDateTime.now());
 
         usersMapper.updateByPrimaryKeySelective(updateUser);
 
