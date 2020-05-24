@@ -1,0 +1,23 @@
+server:
+  port: 8002
+spring:
+  datasource:                                           # 数据源的相关配置
+    type: com.zaxxer.hikari.HikariDataSource          # 数据源类型：HikariCP
+    driver-class-name: com.mysql.jdbc.Driver          # mysql驱动
+    url: jdbc:mysql://localhost:3306/foodie-shop-dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true
+    username: root
+    password: root
+  rabbitmq:
+    addresses: 127.0.0.1:5672
+    username: guest
+    password: guest
+    host: /
+    connection-timeout: 15000
+    listener:
+      simple:
+        acknowledge-mode: manual # 表示消费者消费成功消息之后需要手工进行签收(ack) 默认是auto
+        concurrency: 5 #最小的消费者数量
+        max-concurrency: 10 #最大的消费者数量
+        prefetch: 1 #指定一个请求能处理多少个消息，如果有事务的话，必须大于等于transaction数量.
+
+
