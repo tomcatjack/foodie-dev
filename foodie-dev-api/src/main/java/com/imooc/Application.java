@@ -21,7 +21,6 @@ import tk.mybatis.spring.annotation.MapperScan;
 // 扫描所有包以及相关组件包
 @ComponentScan(basePackages = {"com.imooc", "org.n3r.idworker"})
 @EnableScheduling
-@EnableRedisHttpSession
 @EnableCaching
 public class Application {
 

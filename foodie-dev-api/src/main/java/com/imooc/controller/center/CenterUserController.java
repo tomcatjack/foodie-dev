@@ -7,7 +7,6 @@ import com.imooc.pojo.vo.UsersVO;
 import com.imooc.resource.FileUpload;
 import com.imooc.service.center.CenterUserService;
 import com.imooc.utils.CookieUtils;
-import com.imooc.utils.DateUtil;
 import com.imooc.utils.IMOOCJSONResult;
 import com.imooc.utils.JsonUtils;
 import com.imooc.utils.RedisOperator;
@@ -37,12 +36,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-/** 
+
+/**
  * 用户信息接口
  *
  * @author luqi
  * @date 2020/4/6
- */ 
+ */
 @Api(value = "用户信息接口", tags = {"用户信息相关接口"})
 @RestController
 @RequestMapping("userInfo")
@@ -178,12 +178,12 @@ public class CenterUserController extends BaseController {
     return IMOOCJSONResult.ok();
   }
 
-  private UsersVO createUsersVO(Users users){
+  private UsersVO createUsersVO(Users users) {
     String tocken = UUID.randomUUID().toString().trim();
-    redisOperator.set(REDIS_USER_TOKEN+":"+users.getId(),tocken);
+    redisOperator.set(REDIS_USER_TOKEN + ":" + users.getId(), tocken);
     UsersVO usersVO = new UsersVO();
     usersVO.setUserUniqueToken(tocken);
-    BeanUtils.copyProperties(users,usersVO);
+    BeanUtils.copyProperties(users, usersVO);
     return usersVO;
   }
 
